@@ -1,0 +1,2 @@
+// Creates a new database on the MongoDB
+use my_db;
