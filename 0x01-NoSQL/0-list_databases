@@ -1,2 +1,2 @@
-// lsit all databases
+// list all databases on mongo server
 show dbs;
