@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """ writing strings to Redis"""
 import redis
 import uuid
