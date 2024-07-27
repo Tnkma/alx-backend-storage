@@ -1,23 +1,36 @@
-#!/usr/bin/env python3
-""" Redis Module """
-from functools import wraps
-import redis
 import requests
-from typing import Callable
-from datetime import timedelta
+import redis
+from functools import wraps
+from time import sleep
 
 
-def get_page(url: str) -> str:
-    """ Get page count"""
-    if url is None or len(url.strip()) == 0:
-        return ''
-    redis = redis.Redis()
-    res_key = 'result:{}'.format(url)
-    req_key = 'count:{}'.format(url)
-    result = redis.get(res_key)
-    if result is not None:
-        redis.incr(req_key)
+cache = redis.Redis(host='localhost', port=6379, db=0)
+
+def cache_page(func):
+    """ Caches the page content for 10 seconds """
+    @wraps(func)
+    def wrapper(url):
+        """ Wrapper for decorator functionality """
+        # Key for counting accesses
+        count_key = f"count:{url}"
+        # Key for caching the page content
+        cache_key = f"cache:{url}"
+
+        # Increment the access count
+        cache.incr(count_key)
+
+        # Try to get the cached page
+        cached_page = cache.get(cache_key)
+        if cached_page:
+            return cached_page.decode('utf-8')
+
+        # If not cached, call the function and cache the result
+        result = func(url)
+        cache.setex(cache_key, 10, result)  # Cache for 10 seconds
         return result
-    result = requests.get(url).content.decode('utf-8')
-    redis.setex(res_key, timedelta(seconds=10), result)
-    return result
+    return wrapper
+
+@cache_page
+def get_page(url: str) -> str:
+    response = requests.get(url)
+    return response.text
