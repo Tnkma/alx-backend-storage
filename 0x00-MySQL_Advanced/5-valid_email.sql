@@ -1,5 +1,6 @@
 -- reset valid email before update
 
+
 CREATE TRIGGER reset_valid_email_before_update
 BEFORE UPDATE ON users
 FOR EACH ROW
