@@ -65,7 +65,7 @@ class Cache:
 
     def get(self, key: str, fn: Optional[Callable] = None) -> Union[
         str, bytes, int, float, None
-        ]:
+    ]:
         """Get data from redis
 
         Args:
