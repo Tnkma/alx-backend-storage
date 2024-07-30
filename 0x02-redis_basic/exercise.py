@@ -25,7 +25,7 @@ def call_history(method: Callable) -> Callable:
     outputs = key + ":outputs"
 
     @wraps(method)
-    def wrapper(self, *args, **kwargs):  # sourcery skip: avoid-builtin-shadow
+    def wrapper(self, *args, **kwargs):
         """Wrapper for decorator functionality"""
         self._redis.rpush(inputs, str(args))
         data = method(self, *args, **kwargs)
@@ -44,8 +44,8 @@ def replay(fn: Callable) -> None:
     inputs = cache.lrange(name + ":inputs", 0, -1)
     outputs = cache.lrange(name + ":outputs", 0, -1)
     for i, o in zip(inputs, outputs):
-        print("{} function(*{}) -> {}".format(name, i.decode('utf-8'),
-                                              o.decode('utf-8')))
+        print("{}(*{}) -> {}".format(name, i.decode('utf-8'),
+                                     o.decode('utf-8')))
 
 
 class Cache:
@@ -56,6 +56,7 @@ class Cache:
         self._redis.flushdb()
 
     @count_calls
+    @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """Store data in redis"""
         key = str(uuid.uuid4())
@@ -70,7 +71,7 @@ class Cache:
             fn (Optional[Callable], optional): Used to convert the data.
 
         Returns:
-            Union[str, bytes, int, float, None]: _description_
+            Union[str, bytes, int, float, None]: The retrieved data
         """
         data = self._redis.get(key)
         if data is None:
